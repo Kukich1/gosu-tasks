@@ -1,7 +1,7 @@
 import { createRouter, createWebHashHistory } from "vue-router";
-import LoginPage from "./components/LoginPaige/LoginPage.vue";
-import MainPage from "./components/UserPaige/MainPage.vue";
-import AdminPage from "./components/AdminPaige/AdminPage.vue";
+import LoginPage from "./components/LoginPage/LoginPage.vue";
+import MainPage from "./components/UserPage/MainPage.vue";
+import AdminPage from "./components/AdminPage/AdminPage.vue";
 
 const router = createRouter({
 	history: createWebHashHistory(),
