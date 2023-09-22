@@ -46,6 +46,7 @@
                 <div class="logo">
                     <img src="../images_and_gifs/tasks1.svg" alt="Что-то пошло не так братик!" />
                 </div>
+                <Datepicker v-model="this.dateRange" range :maxDate="new Date()" :enableTimePicker="false" :startTime="[{hours: 0, minutes: 0}, {hours: 23, minutes: 59}]" :clearable="false"/>
                 <div class="container-img">
                     <img class="background_image_class" src="../images_and_gifs/Фон.svg" />
                 </div>
@@ -88,7 +89,6 @@
                             <div class="item" v-for="(post, id) in selectedUserTasks" :key="id">
                                 <div @click="openCardModal(post, 'Задачи на сегодня')" class="card_today"
                                     v-if="post.type === 'default' && isToday(post.created_at)">
-
                                     <strong class="post_title">{{ post.post_tittle }}</strong>
                                     <p class="post_title_date">{{ formatCreatedAt(post.created_at) }}</p>
                                 </div>
@@ -136,7 +136,10 @@
 <script>
 import axios from 'axios';
 import XLSX from 'xlsx';
-import UserDetails from './helps/UserDetails.vue'
+import Datepicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+import UserDetails from './helps/UserDetails.vue';
+import { watch } from 'vue';
 export default {
     data() {
         const Name = localStorage.getItem('name');
@@ -145,19 +148,27 @@ export default {
             Name: clearName,
             all_users: [],
             selectedUserTasks: [],
-            selectedUser: null,
+            selectedUser: 'batyr_user',
+            dateRange: [new Date(new Date().setHours(0,0,0,0)).setDate(new Date().getDate() - 7), new Date(new Date().setHours(23,59,59,999)).setDate(new Date().getDate() - 0)],
             isTaskModalVisible: false,
             selectedPost: null,
             isLoadingUserDetails: false,
             newComment: '',
             postColumn: '',
             taskId: '',
+            isSubmitting: false,
         };
     },
-    components: { UserDetails },
+    components: { UserDetails, Datepicker },
     created() {
         this.AllFetchTasks();
         this.test();
+    },
+    watch: {
+        dateRange(newRange) {
+            
+            this.userInfo(this.selectedUser);
+        }
     },
     methods: {
         async AllFetchTasks() {
@@ -169,7 +180,7 @@ export default {
                         'Authorization': `Bearer ${clearToken}`
                     },
                 };
-                const response = await axios.get('https://gosutasks-api.vercel.app/admin/get_data/', config);
+                const response = await axios.get(`https://gosutasks-api.vercel.app/admin/get_data/`, config);
                 const responseData = response.data;
                 this.all_users = responseData;
                 this.all_users.sort((a, b) => b.created_at - a.created_at);
@@ -208,7 +219,7 @@ export default {
                     },
                     responseType: 'blob',
                 };
-                const response = await axios.get('https://gosutasks-api.vercel.app/admin/exportexcel/all_posts/', config);
+                const response = await axios.post(`https://gosutasks-api.vercel.app/admin/exportexcel/all_posts?start=${this.dateRange[0].valueOf() / 1000}&end=${this.dateRange[1].valueOf() / 1000}`, undefined, config);
                 const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
@@ -236,7 +247,7 @@ export default {
                         'Authorization': `Bearer ${clearToken}`
                     },
                 };
-                const response = await axios.get('https://gosutasks-api.vercel.app/admin/exportexcel/all_posts/', config);
+                const response = await axios.post(`https://gosutasks-api.vercel.app/admin/exportexcel/all_posts/?start=${this.dateRange[0].valueOf() / 1000}&end=${this.dateRange[1].valueOf() / 1000}`, undefined, config);
                 const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
@@ -249,6 +260,7 @@ export default {
             }
         },
         async exportToExcelUser(selectedUser) {
+            console.log("🚀 ~ file: AdminPage.vue:262 ~ exportToExcelUser ~ selectedUser:", selectedUser)
             try {
                 const token = localStorage.getItem("token");
                 const clearToken = token.replaceAll("\"", "");
@@ -258,7 +270,7 @@ export default {
                     },
                     responseType: 'blob',
                 };
-                const response = await axios.post(`https://gosutasks-api.vercel.app/admin/exportexcel/${selectedUser.username}`, undefined, config);
+                const response = await axios.post(`https://gosutasks-api.vercel.app/admin/exportexcel/${selectedUser.username}?start=${this.dateRange[0].valueOf() / 1000}&end=${this.dateRange[1].valueOf() / 1000}`, {}, config);
                 const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
@@ -287,7 +299,7 @@ export default {
                         'Authorization': `Bearer ${clearToken}`
                     },
                 };
-                const response = await axios.post(`https://gosutasks-api.vercel.app/admin/exportexcel/${selectedUser}`, undefined, config);
+                const response = await axios.post(`https://gosutasks-api.vercel.app/admin/exportexcel/${selectedUser.user}?start=${this.dateRange[0].valueOf() / 1000}&end=${this.dateRange[1].valueOf() / 1000}`, {}, config);
                 const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
@@ -306,6 +318,7 @@ export default {
             this.isLoadingUserDetails = true;
             try {
                 const token = localStorage.getItem("token");
+                this.selectedUser = user;
                 const clearToken = token.replaceAll('"', '');
                 let config = {
                     headers: {
@@ -313,17 +326,23 @@ export default {
                     },
                     responseType: 'blob',
                 };
-                const response = await axios.get(`https://gosutasks-api.vercel.app/admin/show_user_posts_collection/${user.username}`, config);
+                const response = await axios.get(`https://gosutasks-api.vercel.app/admin/show_user_posts_collection/${this.selectedUser.username}?start=${this.dateRange[0].valueOf() / 1000}&end=${this.dateRange[1].valueOf() / 1000}`, config);
                 const blobData = response.data;
                 const textData = await blobData.text();
                 const jsonData = JSON.parse(textData);
                 console.log("jsonData", jsonData);
-                this.selectedUser = user;
                 this.selectedUserTasks = jsonData;
                 console.log("selectedUserTasks", this.selectedUserTasks);
                 this.isLoadingUserDetails = false;
             }
             catch (error) {
+                const refresh_token = localStorage.getItem("refresh_token");
+                const clearRef = refresh_token.replaceAll("\"", "");
+                let config2 = {
+                    headers: {
+                        'Authorization': `Bearer ${clearRef}`
+                    },
+                };
                 const response1 = await axios.post('https://gosutasks-api.vercel.app/token/refresh/', undefined, config2);
                 localStorage.removeItem("token");
                 localStorage.setItem("token", JSON.stringify(response1.data.access_token));
@@ -334,7 +353,7 @@ export default {
                         'Authorization': `Bearer ${clearToken}`
                     },
                 };
-                const response = await axios.get(`https://gosutasks-api.vercel.app/admin/show_user_posts_collection/${user.username}`, config);
+                    const response = await axios.get(`https://gosutasks-api.vercel.app/admin/show_user_posts_collection/${this.selectedUser.username}?start=${this.dateRange[0].valueOf() / 1000}&end=${this.dateRange[1].valueOf() / 1000}`, config);
                 const blobData = response.data;
                 const textData = await blobData.text();
                 const jsonData = JSON.parse(textData);
@@ -423,7 +442,7 @@ export default {
     flex-direction: column;
     max-width: 17%;
     min-width: 15%;
-    height: 100vh;
+    height: 100%;
     text-align: center;
     color: white;
 }
@@ -435,7 +454,7 @@ export default {
 
 .adminpage_header {
     width: 100%;
-    height: 20%;
+    height: 15%;
     display: flex;
 }
 
@@ -456,7 +475,7 @@ export default {
 .admin_info {
     text-align: center;
     width: 15%;
-    padding: 1%;
+    padding: 2%;
 }
 
 .name_container {
@@ -464,16 +483,17 @@ export default {
 }
 
 .admin_title {
-    padding: 10%;
+    padding: 15%;
     text-align: left;
     font-size: 3vh;
     max-width: 90%;
 }
 
 .export_button_container {
+    width: 90%;
     display: flex;
     justify-content: center;
-    align-items: flex-end;
+    padding-left: 10%;
 }
 
 .export_button {
@@ -587,7 +607,7 @@ export default {
 }
 
 .button_exit_container {
-    padding: 10%;
+    padding: 5%;
     width: 100%;
 }
 
@@ -713,7 +733,7 @@ export default {
 }
 
 .card_today:hover {
-    border: 2px solid rgb(148, 148, 0);
+    border: 2px solid rgb(8, 148, 0);
 }
 
 .column_question {
@@ -742,7 +762,7 @@ export default {
 .export_user_button_container {
     display: flex;
     justify-content: center;
-    margin-right: 10%;
+    padding-top: 2%;
 }
 
 .export_user_button {

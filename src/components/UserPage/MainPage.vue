@@ -15,9 +15,9 @@
                         <p class="post_title_date">{{ formatCreatedAt(post.created_at) }}</p>
                     </div>
                     <CardsModal :showCardsModal="isChangTaskModalVisible" :selectedPost="selectedPost"
-                        :isEditing="showSaveButton" :postType="postDataType" :fetchTasks="fetchTasks"
-                        :columnTitle="postColumn" title="Подробная информация о карточке" @close="closeChangTaskModal"
-                        @chang-task="changTask" @delete-task="deleteTaskHandler">
+                        :isEditing="showSaveButton" :postType="post.type" :fetchTasks="fetchTasks" :columnTitle="postColumn"
+                        title="Подробная информация о карточке" @close="closeChangTaskModal" @chang-task="changTask"
+                        @delete-task="deleteTaskHandler">
                     </CardsModal>
                 </div>
             </div>
@@ -35,9 +35,9 @@
                         <p class="post_title_date">{{ formatCreatedAt(post.created_at) }}</p>
                     </div>
                     <CardsModal :showCardsModal="isChangTaskModalVisible" :selectedPost="selectedPost"
-                        :isEditing="showSaveButton" :postType="postDataType" :fetchTasks="fetchTasks"
-                        :columnTitle="postColumn" title="Подробная информация о карточке" @close="closeChangTaskModal"
-                        @chang-task="changTask" @delete-task="deleteTaskHandler"></CardsModal>
+                        :isEditing="showSaveButton" :postType="post.type" :fetchTasks="fetchTasks" :columnTitle="postColumn"
+                        title="Подробная информация о карточке" @close="closeChangTaskModal" @chang-task="changTask"
+                        @delete-task="deleteTaskHandler"></CardsModal>
                 </div>
             </div>
         </div>
@@ -54,9 +54,9 @@
                         <p class="post_title_date">{{ formatCreatedAt(post.created_at) }}</p>
                     </div>
                     <CardsModal :showCardsModal="isChangTaskModalVisible" :selectedPost="selectedPost"
-                        :isEditing="showSaveButton" :postType="postDataType" :fetchTasks="fetchTasks"
-                        :columnTitle="postColumn" title="Подробная информация о карточке" @close="closeChangTaskModal"
-                        @chang-task="changTask" @delete-task="deleteTaskHandler"></CardsModal>
+                        :isEditing="showSaveButton" :postType="post.type" :fetchTasks="fetchTasks" :columnTitle="postColumn"
+                        title="Подробная информация о карточке" @close="closeChangTaskModal" @chang-task="changTask"
+                        @delete-task="deleteTaskHandler"></CardsModal>
                 </div>
             </div>
         </div>
@@ -65,7 +65,7 @@
     <div class="button_create_task_container">
         <button @click="showCreateTaskModal" class="button_create_task">Создать задачу</button>
     </div>
-    <Modal :show-modal="isCreateTaskModalVisible" title="Создание задачи"
+    <Modal :showModal="isCreateTaskModalVisible" title="Создание задачи"
         description="Введите информацию о задаче и выберите контейнер." @close="closeCreateTaskModal"
         @create-task="createTask">
     </Modal>
@@ -93,11 +93,12 @@ export default {
             showSaveButton: false,
             postColumn: '',
             postDataType: '',
-            changTask: null
+            changTask: null,
+            selectedDate: null,
+            locale: "ru-RU",
         };
     },
     created() {
-        this.fetchTasks();
         this.test();
     },
     methods: {
@@ -223,7 +224,6 @@ export default {
             }
             if (post.comments) {
                 this.selectedPost = post;
-                console.log(post)
                 this.postType = post.type;
                 this.initialComment = post.comments;
                 this.isChangTaskModalVisible = true;
@@ -473,5 +473,156 @@ header {
 
 .card_question:hover {
     border: 2px solid rgb(99, 76, 79);
+}
+
+/* верстка на мобилку */
+
+@media screen and (max-width: 800px) {
+    * {
+    margin: 0 0;
+    box-sizing: border-box;
+    font-family: 'Jost', sans-serif;
+}
+
+    .column_body {
+        width: 100%;
+        height: 100%;
+}
+
+    header {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 4%;
+    }
+
+    .button_create_task_container {
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-end;
+
+    }
+
+    .button_create_task {
+        width: 100%;
+        height: 10vh;   
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        border-radius: 5px;
+        border-color: #65B2F0;
+        background: #65B2F0;
+        color: #FFF;
+        text-align: center;
+        font-size: 120%;
+        font-style: normal;
+        line-height: normal;
+        font-weight: 700;
+    }
+
+    .button_create_task:hover {
+        background-color: #3299ec;
+    }
+
+    .cards {
+        display: flex;
+        width: 70%;
+        height: 100%;
+    }
+
+    .column_header {
+        padding: 10%;
+        width: 100%;
+        height: 10vh;
+        border-radius: 10px;
+        font-size: 100%;
+    }
+
+    .post_title {
+        font-size: 15px;
+        font-weight: bold;
+        text-transform: uppercase;
+        line-height: 1.5;
+        letter-spacing: 1px;
+        color: #333;
+    }
+
+    .post_title_date {
+        color: rgb(104, 104, 104);
+        font-size: 90%;
+    }
+
+    .column_yesterday {
+        margin-top: 5%;
+        flex-direction: column;
+        width: 32%;
+        height: 100%;
+        margin: 2%;
+    }
+
+    .card_yesterday {
+        cursor: pointer;
+        text-align: center;
+        margin-top: 3%;
+        width: 98%;
+        height: 100%;
+        background: #9DE09C;
+        border: 2px solid white;
+        border-radius: 3.5px;
+        padding: 2%;
+    }
+
+
+    .card_yesterday:hover {
+        border: 2px solid #015300;
+    }
+
+    .column_today {
+        flex-direction: column;
+        width: 32%;
+        height: 100%;
+        margin: 2%;
+    }
+
+    .card_today {
+        cursor: pointer;
+        text-align: center;
+        margin-top: 3%;
+        width: 98%;
+        background-color: rgb(255, 255, 110);
+        border: 2px solid white;
+        height: 100%;
+        border-radius: 3.5px;
+        padding: 2%;
+    }
+
+    .card_today:hover {
+        border: 2px solid rgb(148, 148, 0);
+    }
+
+    .column_question {
+        flex-direction: column;
+        width: 32%;
+        height: 100%;
+        margin: 2%;
+    }
+
+    .card_question {
+        cursor: pointer;
+        text-align: center;
+        margin-top: 3%;
+        width: 98%;
+        height: 100%;
+        background-color: pink;
+        border: 2px solid white;
+        border-radius: 3.5px;
+        padding: 2% 2%;
+    }
+
+    .card_question:hover {
+        border: 2px solid rgb(99, 76, 79);
+    }
 }
 </style>

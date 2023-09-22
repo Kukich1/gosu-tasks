@@ -91,4 +91,10 @@ export default {
   width: 100%;
   text-align: center;
 }
+
+/*отсюда начинается верстка на мобильные устройства*/
+
+@media screen and (max-height: 800px) {
+
+}
 </style>

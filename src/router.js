@@ -13,7 +13,8 @@ const router = createRouter({
 });
 router.beforeEach((to, from, next) => {
 	const token = localStorage.getItem('token');
-	if (to.path !== "/login" && !token) {
+	const refreshToken = localStorage.getItem('refresh_token')
+	if (to.path !== "/login" && !token && !refreshToken) {
 		next("/login");
 	} else {
 		next()

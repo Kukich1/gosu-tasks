@@ -37,8 +37,8 @@
             <button v-if="!isEditing" @click="editPost" class="change_button">
               <img src="../../images_and_gifs/change.svg" /> Изменить
             </button>
-            <button v-else @click="savePost" class="button_save">Сохранить</button>
-            <button @click="deleteTask" class="button_delete">Удалить</button>
+            <button v-else @click="savePost" class="button_save" :disabled="isLoading">Сохранить</button>
+            <button @click="deleteTask" class="button_delete" :disabled="isLoading">Удалить</button>
           </div>
 
         </div>
@@ -50,23 +50,23 @@
 
         <div class="comment_container">
           <div class="comment_title">
-              <div class="comment_title_image_container">
-                  <img src="../../images_and_gifs/comments.svg"/>
-              </div>
-              <div class="comment_container_text">
-                  <h2>Комментарии</h2>
-              </div>  
+            <div class="comment_title_image_container">
+              <img src="../../images_and_gifs/comments.svg" />
+            </div>
+            <div class="comment_container_text">
+              <h2>Комментарии</h2>
+            </div>
           </div>
           <div class="comments" v-if="selectedPost.comments && selectedPost.comments.length > 0">
             <ul>
               <li class="comment" v-for="(comment, index) in selectedPost.comments" :key="index">
-                <p>{{ comment  }}</p>
+                <p>{{ comment }}</p>
               </li>
             </ul>
-          </div>     
-      </div>
+          </div>
+        </div>
 
-      
+
       </div>
     </div>
   </div>
@@ -76,163 +76,159 @@
 import axios from 'axios';
 
 export default {
-name: 'CardsModal',
-props: {
-  showCardsModal: Boolean,
-  selectedPost: Object,
-  fetchTasks: Function,
-  columnTitle: String,
-  postDataType: String,
-},
-data() {
-  return {
-    isEditing: false,
-    editedText: '',
-    isLoading: false,
-    postType: '',
-    changTask: '',
-    localPostType: this.postType,
-    changTask: null,
-    comments: null,
-  };
-},
-methods: {
-  preventClose(event) {
-    event.stopPropagation();
+  name: 'CardsModal',
+  props: {
+    showCardsModal: Boolean,
+    selectedPost: Object,
+    fetchTasks: Function,
+    columnTitle: String,
+    postDataType: String,
   },
-  updatePostType(event) {
-    const selectedValue = event.target.value;
-    this.localPostType = selectedValue;
-  },
-  editPost() {
-    this.isEditing = true
-    this.localPostType = this.postType;
-    if (this.isEditing) {
-      this.editedText = this.selectedPost.post_text;
-    }
-  },
-  async savePost() {
-    this.isLoading = true;
-    console.log("Сохранение данных:", this.editedText);
-    const changTextTaskData = {
-      post_text: this.editedText,
+  data() {
+    return {
+      isEditing: false,
+      editedText: '',
+      isLoading: false,
+      postType: 'default',
+      changTask: '',
+      localPostType: this.postType,
+      changTask: null,
+      comments: null,
     };
-    console.log("Измененый тип:", this.localPostType);
-    const changTypeTaskData = {
-      type: this.localPostType,
-    }
-    try {
-      if (this.selectedPost) {
-        const response = await this.changTaskText(changTextTaskData);
-        console.log("Ответ от сервера:", response);
-        const response1 = await this.changTaskType(changTypeTaskData);
-        console.log('Карточка успешно изменена:', response.data, response1.data);
-        this.$emit('update:postType', this.localPostType);
-      } else {
-        console.error('Выбранная карточка не определена.');
+  },
+  methods: {
+    preventClose(event) {
+      event.stopPropagation();
+    },
+    updatePostType(event) {
+      const selectedValue = event.target.value;
+      this.localPostType = selectedValue;
+    },
+    editPost() {
+      this.isEditing = true
+      this.localPostType = this.postType;
+      this.editedText = this.selectedPost.post_text;
+    },
+    async savePost() {
+      this.isLoading = true;
+      const changTextTaskData = {
+        "post_text": this.editedText,
+      };
+      const changTypeTaskData = {
+        "type": this.localPostType,
       }
-    } catch (error) {
-      console.error('Произошла ошибка при изменении карточки:', error);
-    } finally {
-      this.isLoading = false;
-    }
-    if (this.selectedPost) {
-      this.selectedPost.post_text = this.editedText;
-    }
-    this.editedText = '';
-    this.isEditing = false
-  },
-  async changTaskText(changTextTaskData) {
-    try {
-      const token = localStorage.getItem("token");
-      const cleanToken = token.replaceAll("\"", "");
-      const config = {
-        headers: {
-          'Authorization': `Bearer ${cleanToken}`,
+      try {
+        if (this.selectedPost) {
+          const response = await this.changTaskText(changTextTaskData);
+          const response1 = await this.changTaskType(changTypeTaskData);
+          this.$emit('update:postType', this.localPostType);
+        } else {
+          console.error('Выбранная карточка не определена.');
         }
-      };
-      const response = await axios.put
-        (`https://gosutasks-api.vercel.app/user/change_post/${this.selectedPost.id}`,
+      } catch (error) {
+        console.error('Произошла ошибка при изменении карточки:', error);
+      } finally {
+        this.isLoading = false;
+      }
+      if (this.selectedPost) {
+        this.selectedPost.post_text = this.editedText;
+      }
+      this.editedText = '';
+      this.isEditing = false
+    },
+    async changTaskText(changTextTaskData) {
+      try {
+        const token = localStorage.getItem("token");
+        const cleanToken = token.replaceAll("\"", "");
+        const config = {
+          headers: {
+            'Authorization': `Bearer ${cleanToken}`,
+          }
+        };
+        const response = await axios.put
+          (`https://gosutasks-api.vercel.app/user/change_post/${this.selectedPost.id}`,
           changTextTaskData, config);
-      await this.fetchTasks();
-    } catch {
-      const refresh_token = localStorage.getItem("refresh_token");
-      const clearRef = refresh_token.replaceAll("\"", "");
-      const config2 = {
-        headers: {
-          'Authorization': `Bearer ${clearRef}`,
-        },
-      };
-      const response1 = await axios.post('https://gosutasks-api.vercel.app/token/refresh/', undefined, config2);
-      localStorage.removeItem("token")
-      localStorage.setItem("token", JSON.stringify(response1.data.access_token));
-      const token = localStorage.getItem("token");
-      const cleanToken = token.replaceAll("\"", "");
-      const config = {
-        headers: {
-          'Authorization': `Bearer ${cleanToken}`,
-        },
-      };
-      const response = await axios.put(`https://gosutasks-api.vercel.app/user/change_post/${this.selectedPost.id}`, changTextTaskData, config);
-      await this.fetchTasks();
-    }
-  },
-  async changTaskType(changTypeTaskData) {
-    try {
-      const token = localStorage.getItem("token");
-      console.log(changTypeTaskData)
-      const cleanToken = token.replaceAll("\"", "");
-      const config = {
-        headers: {
-          'Authorization': `Bearer ${cleanToken}`,
-        }
-      };
-      const response = await axios.put
-        (`https://gosutasks-api.vercel.app/user/change_type_post/${this.selectedPost.id}`,
-          changTypeTaskData, config);
-      await this.fetchTasks();
-    } catch {
-      const refresh_token = localStorage.getItem("refresh_token");
-      const clearRef = refresh_token.replaceAll("\"", "");
-      let config2 = {
-        headers: {
-          'Authorization': `Bearer ${clearRef}`,
-        },  
-      };
-      const response1 = await axios.post('https://gosutasks-api.vercel.app/token/refresh/', undefined, config2);
-      localStorage.removeItem("token")
-      localStorage.setItem("token", JSON.stringify(response1.data.access_token));
-      const token = localStorage.getItem("token");
-      const cleanToken = token.replaceAll("\"", "");
-      let config = {
-        headers: {
-          'Authorization': `Bearer ${cleanToken}`,
-        },
-      };
-      const response = await axios.put
-        (`https://gosutasks-api.vercel.app/user/change_type_post/${this.selectedPost.id}`,
-          changTypeTaskData, config);
-      await this.fetchTasks();
-    }
-  },
-  deleteTask() {
-    this.$emit('delete-task', this.selectedPost);
-    this.closeChangTaskModal();
-  },
-  updateEditedText(event) {
-    this.editedText = event.target.value;
-  },
+          console.log("🚀 ~ file: CardsModal.vue:153 ~ changTaskText ~ changTextTaskData:", changTextTaskData)
+          
+        await this.fetchTasks();
+      } catch {
+        const refresh_token = localStorage.getItem("refresh_token");
+        const clearRef = refresh_token.replaceAll("\"", "");
+        const config2 = {
+          headers: {
+            'Authorization': `Bearer ${clearRef}`,
+          },
+        };
+        const response1 = await axios.post('https://gosutasks-api.vercel.app/token/refresh/', undefined, config2);
+        localStorage.removeItem("token")
+        localStorage.setItem("token", JSON.stringify(response1.data.access_token));
+        const token = localStorage.getItem("token");
+        const cleanToken = token.replaceAll("\"", "");
+        const config = {
+          headers: {
+            'Authorization': `Bearer ${cleanToken}`,
+          },
+        };
+        const response = await axios.put(`https://gosutasks-api.vercel.app/user/change_post/${this.selectedPost.id}`, changTextTaskData, config);
+        await this.fetchTasks();
+      }
+    },
+    async changTaskType(changTypeTaskData) {
+      try {
+        const token = localStorage.getItem("token");
+        console.log(changTypeTaskData)
+        const cleanToken = token.replaceAll("\"", "");
+        const config = {
+          headers: {
+            'Authorization': `Bearer ${cleanToken}`,
+          }
+        };
+        const response = await axios.put
+          (`https://gosutasks-api.vercel.app/user/change_type_post/${this.selectedPost.id}`,
+            changTypeTaskData, config);
+        await this.fetchTasks();
+      } catch {
+        const refresh_token = localStorage.getItem("refresh_token");
+        const clearRef = refresh_token.replaceAll("\"", "");
+        let config2 = {
+          headers: {
+            'Authorization': `Bearer ${clearRef}`,
+          },
+        };
+        const response1 = await axios.post('https://gosutasks-api.vercel.app/token/refresh/', undefined, config2);
+        localStorage.removeItem("token")
+        localStorage.setItem("token", JSON.stringify(response1.data.access_token));
+        const token = localStorage.getItem("token");
+        const cleanToken = token.replaceAll("\"", "");
+        let config = {
+          headers: {
+            'Authorization': `Bearer ${cleanToken}`,
+          },
+        };
+        const response = await axios.put
+          (`https://gosutasks-api.vercel.app/user/change_type_post/${this.selectedPost.id}`,
+            changTypeTaskData, config);
+        await this.fetchTasks();
+      }
+    },
+    deleteTask() {
+      this.$emit('delete-task', this.selectedPost);
+      this.closeChangTaskModal();
+    },
+    updateEditedText(event) {
+      this.editedText = event.target.value;
+    },
 
-  handleCtrlEnterKey(event) {
-    if (event.key === 'Enter' && event.ctrlKey) {
-      this.savePost();
-    }
+    handleCtrlEnterKey(event) {
+      if (event.key === 'Enter' && event.ctrlKey) {
+        this.savePost();
+      }
+    },
+    closeChangTaskModal() {
+      this.$emit('close');
+      this.isEditing = false
+    },
   },
-  closeChangTaskModal() {
-    this.$emit('close');
-    this.isEditing = false
-  },
-},
 };
 </script>
 
@@ -514,11 +510,12 @@ animation: rotateX 0.5s infinite linear reverse;
 }
 
 @keyframes rotateX {
-from {
-  transform: rotateZ(0deg);
-}
+  from {
+    transform: rotateZ(0deg);
+  }
 
-to {
-  transform: rotateZ(360deg);
+  to {
+    transform: rotateZ(360deg);
+  } 
 }
-}</style>
+</style>

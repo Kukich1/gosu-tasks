@@ -32,7 +32,7 @@
                 <div class="comment_container">
                     <div class="comment_title">
                         <div class="comment_title_image_container">
-                            <img src="../../images_and_gifs/comments.svg" />   
+                            <img src="../../images_and_gifs/comments.svg" />
                         </div>
                         <div class="comment_container_text">
                             <h2>Комментарии</h2>
@@ -44,7 +44,7 @@
                     <div class="comment_add_button_container">
                         <button @click="addComment(selectedPost.id)" class="comment_add_button">Отправить</button>
                     </div>
-                    <div class="comments" v-if="selectedPost && Array.isArray(selectedPost.comments) && selectedPost.comments.length > 0">
+                    <div style="overflow-y: scroll; max-height: 100px;" class="comments" v-if="selectedPost && Array.isArray(selectedPost.comments) && selectedPost.comments.length > 0">
                         <ul>
                             <li class="comment" v-for="(comment, index) in selectedPost.comments" :key="index">
                                 <p>{{ comment }}</p>
@@ -201,7 +201,7 @@ export default {
 .textarea_container {
     padding-left: 2%;
     width: 100%;
-    height: 30%;
+    height: 20%;
 }
 
 .textarea {
@@ -241,8 +241,9 @@ export default {
 }
 
 .comment_container_text {
+    padding-top: 2%;
     width: 30%;
-    height: 1.5em;
+    height: 3em;
 }
 
 .comment-section_container {
@@ -272,6 +273,7 @@ export default {
     display: flex;
     align-items: flex-start;
     padding-left: 2%;
+    padding-top: 2%;
 }
 
 .comment_add_button {
@@ -352,7 +354,7 @@ export default {
 
 .input_title_container {
     padding-left: 1.5%;
-    width: 20%;
+    width: 25%;
 }
 
 .input_container {

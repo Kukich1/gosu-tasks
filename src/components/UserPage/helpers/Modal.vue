@@ -1,18 +1,18 @@
 <template>
-    <div class="modal-overlay" v-if="showModal">
-        <div class="modal">
+    <div class="modal-overlay" v-if="showModal" @click="closeModal">
+        <div class="modal" @click="preventClose">
             <div class="inner_modal">
                 <div class="title_container">
-                    
+
                     <div class="title_container_text">
                         <div class="title_text_container">
                             <h2>{{ title }}</h2>
-                        </div>       
+                        </div>
                         <div class="form-group">
                             <label for="taskType">Тип задачи: </label>
                             <select v-model="taskType" id="taskType">
-                            <option value="default">Обычная задача</option>
-                            <option value="question">Вопрос</option>
+                                <option value="default">Обычная задача</option>
+                                <option value="question">Вопрос</option>
                             </select>
                         </div>
                         <div class="button_close_container">
@@ -20,13 +20,13 @@
                         </div>
                     </div>
                     <div class="title_inner_container">
-                            <div class="title_description_container">
+                        <div class="title_description_container">
                             <p>{{ description }}</p>
                         </div>
-                            <button @click="saveTask" class="button_save">Сохранить</button>
-                        </div>      
+                        <button @click="saveTask" class="button_save">Сохранить</button>
+                    </div>
                 </div>
-                
+
                 <div class="input_container">
                     <input v-model="taskTitle" type="text" class="input" placeholder="Название задачи">
                 </div>
@@ -54,33 +54,34 @@ export default {
             taskTitle: '',
             taskDescription: '',
             taskType: 'default',
-            cardType: "",
-            cardText: "",
         };
     },
     methods: {
+        preventClose(event) {
+            event.stopPropagation();
+        },
+        isToday(timestamp) {
+            const now = new Date();
+            const taskDate = new Date(timestamp * 1000);
+            return taskDate.toDateString() === now.toDateString();
+        },
+        saveTask() {
+            const taskData = {
+                post_tittle: this.taskTitle,
+                post_text: this.taskDescription,
+                created_at: this.isToday(Date.now() / 1000),
+                type: this.taskType,
+            };
+            this.$emit('create-task', taskData);
+            this.taskTitle = '';
+            this.taskDescription = '';
+            this.closeModal();
+        },
         closeModal() {
             this.$emit('close');
         },
-        isToday(timestamp) {
-        const now = new Date();
-        const taskDate = new Date(timestamp * 1000);
-        return taskDate.toDateString() === now.toDateString();
     },
-    saveTask() {
-        const taskData = {
-            post_tittle: this.taskTitle,
-            post_text: this.taskDescription,
-            created_at: this.isToday(Date.now() / 1000),
-            type: this.taskType,
-        };
-        this.$emit('create-task', taskData);
-        this.taskTitle = '';
-        this.taskDescription = '';
-        this.closeModal();
-        },
-    },
-};
+}
 </script>
   
 <style scoped>
@@ -119,6 +120,7 @@ export default {
     width: 100%;
     height: 10%;
 }
+
 .input {
     font-size: 100%;
     display: flex;
@@ -134,12 +136,14 @@ export default {
 .input:hover {
     background-color: #dddddd;
 }
+
 .textarea_container {
     padding-top: 2%;
     margin: 2%;
     width: 100%;
     height: 65%;
 }
+
 .textarea {
     padding: 2%;
     font-size: 120%;
@@ -150,15 +154,16 @@ export default {
     border-radius: 4px;
     border: 1px solid #aaaaaa;
     background: #F3F4F8;
-    text-indent: 15px;   
+    text-indent: 15px;
     resize: none;
 }
 
 .textarea:hover {
     background-color: #dddddd;
 }
+
 .button_container {
-    margin: 2%; 
+    margin: 2%;
     width: 100%;
     height: 15%;
 }
@@ -178,7 +183,7 @@ export default {
     width: 100%;
     margin-left: 2%;
     margin-top: 1%;
-    font-size: 100%; 
+    font-size: 100%;
 }
 
 .title_inner_container {
@@ -189,40 +194,41 @@ export default {
 .title_description_container {
     width: 100%;
 }
+
 .form-group {
     width: 50%;
     margin-right: 2%;
     text-align: right;
 }
+
 .button_save {
-  background: #EAEAEA;
-  background: linear-gradient(0deg, #EAEAEA 0%, #DADADA 50%, #EAEAEA 100%);
-  margin-left: 5%;
-  width: 20%;
-  border: 1px solid white;
-  border-radius: 4px;
+    background: #EAEAEA;
+    background: linear-gradient(0deg, #EAEAEA 0%, #DADADA 50%, #EAEAEA 100%);
+    margin-left: 5%;
+    width: 20%;
+    border: 1px solid white;
+    border-radius: 4px;
 }
 
 .button_save:hover {
-  border: 1px solid black;
+    border: 1px solid black;
 }
 
 .button_close_container {
-  width: 5%;
-  height: 30%;
+    width: 5%;
+    height: 30%;
 }
 
 .button_close {
-  color: white;
-  text-align: center;
-  width: 100%;
-  height: 26px;
-  border: 1px solid white;
-  border-radius: 5px;
-  background-color: rgb(255, 154, 154);
+    color: white;
+    text-align: center;
+    width: 100%;
+    height: 26px;
+    border: 1px solid white;
+    border-radius: 5px;
+    background-color: rgb(255, 154, 154);
 }
 
 .button_close:hover {
     background-color: red;
-}
-</style>
+}</style>

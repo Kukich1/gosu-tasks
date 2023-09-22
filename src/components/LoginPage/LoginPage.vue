@@ -56,12 +56,14 @@ export default {
   name: 'MyLogin',
   data() {
     return {
+      examply: "",
       username: '',
       password: '',
       isButtonDisabled: false,
       isLoading: false,
       usernameError: '',
       passwordError: '',
+      isSubmitting: false,
     };
   },
 
@@ -94,12 +96,8 @@ export default {
         localStorage.setItem("refresh_token", JSON.stringify(response.data.refresh_token))
         localStorage.setItem("role", JSON.stringify(response.data.role))
         localStorage.setItem("name", JSON.stringify(response.data.name))
-        
-
-        console.log("localstorage token :", localStorage.getItem("token"))
-        console.log("localstorage refresh_token:", localStorage.getItem("refresh_token"))
-        console.log("localstorage role :", localStorage.getItem("role"))
-        
+      
+        console.log('Добро пожаловать!)')
 
         const tokenData = response.data;
         if (tokenData.access_token && tokenData.role === 0) {
@@ -285,5 +283,138 @@ main {
 }
 .btn:hover {
   background-color: #35B2F0 ;
+}
+
+/* начинается верстка на мобилки */
+
+@media screen and (max-width: 800px) {
+  .wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 90vh;
+  justify-content: space-between;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.logo-container {
+  padding-left: 10%;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 75vw;
+}
+
+.container img {
+  width: 100px;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  max-width: 357px;
+  height: 45vh;
+  align-items: center;
+  margin-left: 5%;
+  align-items: flex-start;
+}
+
+.form-group {
+  margin-top: 2%;
+  margin-bottom: 2%;
+}
+
+input {
+  width: 90vw;
+  height: 70px;
+  border-radius: 4px;
+  border: 1px solid #D9DADF;
+  background: #F3F4F8;
+  text-indent: 15px;
+}
+
+.is-invalid {
+  border-color: red;
+  color: red;
+  background-color: #F3F4F8;
+}
+.error-active {
+  color: red;
+}
+.error-message{
+  margin-top: 2vh;
+}
+
+main {
+  padding-top: 30%;
+  padding-left: 27%;
+  width: 100%;
+  height: 100%;
+}
+
+.loader {
+  --loader-size: 80px;
+  --loader-border-size: 5px;
+  --loader-border-color: black;
+  width: var(--loader-size);
+  height: var(--loader-size);
+  border: var(--loader-border-size) solid var(--loader-border-color);
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  background-color: transparent;
+  border-radius: 50%;
+  position: relative;
+  animation: rotateX 1s infinite linear;
+}
+
+.loader::before {
+  content:"";
+  border: var(--loader-border-size) solid var(--loader-border-color);
+  border-top-color: transparent;
+  border-left-color: transparent;
+  border-bottom-color: transparent;
+  background-color: transparent;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  animation: rotateX 0.5s infinite linear reverse;
+}
+        
+@keyframes rotateX {
+  from {
+    transform: rotateZ(0deg);
+  }
+  to {
+    transform: rotateZ(360deg);
+  }
+}
+
+
+.btn {
+  width: 100%;
+  height: 11vh;
+  border-radius: 4px;
+  background-color: #65B2F0;
+  color: white;
+  font-family: sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 25px;
+  letter-spacing: 0em;
+  text-align: center;
+  border: 1px solid white;
+}
+.btn:hover {
+  background-color: #35B2F0 ;
+}
 }
 </style>
